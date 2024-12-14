@@ -6,7 +6,12 @@ if [ $# -ne 1 ]; then
 fi
 
 zipfile="$1"
-dbname="${zipfile%.zip}.db"
+
+# Extract the directory of the zip file
+zipdir=$(dirname "$zipfile")
+zipname=$(basename "$zipfile")
+dbname="${zipname%.zip}.db"
+dbpath="$zipdir/$dbname"
 
 # Check if the ZIP file exists
 if [ ! -f "$zipfile" ]; then
@@ -23,7 +28,7 @@ if [ -z "$csvfile" ]; then
 fi
 
 echo "Found CSV file: $csvfile"
-echo "Extracting and importing into SQLite database: $dbname"
+echo "Extracting and importing into SQLite database: $dbpath"
 
 # Extract CSV to a temporary file
 tmpfile=$(mktemp)
@@ -33,8 +38,7 @@ unzip -p "$zipfile" "$csvfile" > "$tmpfile"
 error_log=$(mktemp)
 
 # Import the CSV from the temporary file
-#sqlite3 "$dbname" <<SQL 
-sqlite3 "$dbname" 2>"$error_log" <<SQL 
+sqlite3 "$dbpath" 2>"$error_log" <<SQL
 .mode csv
 .nullvalue NULL
 .import $tmpfile observations
@@ -47,5 +51,5 @@ rm -f "$error_log"
 # Clean up the temporary file
 rm -f "$tmpfile"
 
-echo "SQLite database created: $dbname"
+echo "SQLite database created: $dbpath"
 
