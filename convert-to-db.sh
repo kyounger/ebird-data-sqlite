@@ -39,6 +39,7 @@ error_log=$(mktemp)
 
 # Import the CSV from the temporary file
 sqlite3 "$dbpath" 2>"$error_log" <<SQL
+DROP TABLE IF EXISTS observations;
 .mode csv
 .nullvalue NULL
 .import $tmpfile observations
